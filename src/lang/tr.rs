@@ -699,7 +699,7 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Terminal", ""),
         ("Enable terminal", ""),
         ("New tab", "Yeni sekme"),
-        ("Keep terminal sessions on disconnect", "Bağlantı kesildiğinde uçbirim oturumlarını açık tut"),
+        ("Keep terminal sessions on disconnect", "Bağlantı kesildiğinde terminal oturumlarını açık tut"),
         ("Terminal (Run as administrator)", "Terminal (Yönetici olarak çalıştır)"),
         ("terminal-admin-login-tip", "Lütfen kontrol edilen tarafın yönetici kullanıcı adı ve şifresini giriniz."),
         ("Failed to get user token.", "Kullanıcı belirteci alınamadı."),
@@ -729,5 +729,13 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("server-oss-not-support-tip", "NOT: RustDesk sunucu OSS'si bu özelliği içermemektedir."),
         ("input note here", "Notu buraya girin"),
         ("note-at-conn-end-tip", "Bağlantı bittiğinde not sorulsun"),
+        ("Show terminal extra keys", "Terminal ek tuşlarını göster"),
+        ("Relative mouse mode", ""),
+        ("rel-mouse-not-supported-peer-tip", ""),
+        ("rel-mouse-not-ready-tip", ""),
+        ("rel-mouse-lock-failed-tip", ""),
+        ("rel-mouse-exit-{}-tip", ""),
+        ("rel-mouse-permission-lost-tip", ""),
+        ("Changelog", ""),
     ].iter().cloned().collect();
 }
