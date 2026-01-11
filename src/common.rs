@@ -993,7 +993,7 @@ pub async fn do_check_software_update() -> hbb_common::ResultType<()> {
                 let _ = crate::flutter::push_global_event(crate::flutter::APP_TYPE_MAIN, data);
             }
         }
-        *SOFTWARE_UPDATE_URL.lock().unwrap() = response_url;
+        *SOFTWARE_UPDATE_URL.lock().unwrap() = response_url.replace("rustdesk/rustdesk", "Sunev/rustdesk");
     } else {
         *SOFTWARE_UPDATE_URL.lock().unwrap() = "".to_string();
     }
