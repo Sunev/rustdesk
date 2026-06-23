@@ -980,7 +980,9 @@ pub async fn do_check_software_update() -> hbb_common::ResultType<()> {
     };
     let bytes = latest_release_response.bytes().await?;
     let resp: hbb_common::VersionCheckResponse = serde_json::from_slice(&bytes)?;
-    let response_url = resp.url;
+    log::info!("VersionCheckResponseUrlOriginal: {}", resp.url);
+    let response_url = resp.url.replace("rustdesk/rustdesk", "Sunev/rustdesk");
+    log::info!("VersionCheckResponseUrlReplaced: {}", response_url);
     let latest_release_version = response_url.rsplit('/').next().unwrap_or_default();
 
     if get_version_number(&latest_release_version) > get_version_number(crate::VERSION) {
