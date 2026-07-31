@@ -450,6 +450,27 @@ jobs:
           head -n 100 "${VCPKG_ROOT}/buildtrees/ffmpeg/build-${{ matrix.job.vcpkg-triplet }}-rel-out.log" || true
         shell: bash
 
+      - name: Build rustdesk debug
+        id: build_debug
+        shell: bash
+        run: |
+          # python3 res/inline-sciter.py
+          # Patch sciter x86
+          sed -i 's/branch = "dyn"/branch = "dyn_x86"/g' ./Cargo.toml
+          cargo update -p sciter-rs --precise 674e07d3066ca9a92ced3816203ab6b652629d1e
+          cargo build --locked --features vram,hwcodec --bins
+          mkdir -p ./Debug
+          mv ./target/debug/rustdesk.exe ./Debug/rustdesk.exe
+          curl -LJ -o ./Debug/sciter.dll https://github.com/c-smile/sciter-sdk/raw/master/bin.win/x32/sciter.dll
+          echo "output_folder=./Debug" >> $GITHUB_OUTPUT
+          curl -LJ -o ./usbmmidd_v2.zip https://github.com/rustdesk-org/rdev/releases/download/usbmmidd_v2/usbmmidd_v2.zip
+          unzip usbmmidd_v2.zip
+          # Do not remove x64 files, because the user may run the 32bit version on a 64bit system.
+          # Do not remove ./usbmmidd_v2/deviceinstaller64.exe, as x86 exe cannot install and uninstall drivers when running on x64,
+          # we need the x64 exe to install and uninstall the driver.
+          rm -rf ./usbmmidd_v2/deviceinstaller.exe ./usbmmidd_v2/usbmmidd.bat
+          mv ./usbmmidd_v2 ./Debug || true
+
       - name: Build rustdesk
         id: build
         shell: bash
@@ -486,6 +507,13 @@ jobs:
             echo "list ./libs/portable/Runner.res";
             ls -l ./libs/portable/Runner.res;
           fi
+
+      - name: Upload unsigned debug
+        if: env.UPLOAD_ARTIFACT == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: rustdesk-unsigned-windows-${{ matrix.job.arch }}-debug
+          path: Debug
 
       - name: Upload unsigned
         if: env.UPLOAD_ARTIFACT == 'true'
