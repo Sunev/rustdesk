@@ -454,6 +454,8 @@ class SessionList: Reactor.Component {
         var hostname = s[2] || s.hostname || "";
         var platform = s[3] || s.platform || "";
         var alias = s[4] || s.alias || "";
+var online = onlineStates[id] || false;
+        var onlineDot = <span .online-dot style={online ? "background-color: #4caf50;" : "background-color: #f5853b;"} title={online ? translate('Online') : translate('Offline')}></span>;
         if (this.style == "list") {
             return <div .remote-session-link .remote-session-list id={id} platform={platform} title={alias ? "ID: " + id : ""}>
                 <div .platform style={"background:"+string2RGB(id+platform, 0.5)}>
@@ -461,7 +463,7 @@ class SessionList: Reactor.Component {
                 </div>
                 <div .name>
                     <div>
-                        <div #alias .ellipsis>{alias ? alias : formatId(id)}</div>
+                        <div #alias .ellipsis>{onlineDot}{alias ? alias : formatId(id)}</div>
                         <div .username .ellipsis>{username}@{hostname}</div>
                     </div>
                 </div>
@@ -476,7 +478,7 @@ class SessionList: Reactor.Component {
                 <div .username .ellipsis>{username}@{hostname}</div>
             </div>
             <div .text>
-                <div #alias .ellipsis>{alias ? alias : formatId(id)}</div>
+                <div #alias .ellipsis>{onlineDot}{alias ? alias : formatId(id)}</div>
                 {svg_menu}
             </div>
         </div>;
