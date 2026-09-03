@@ -455,7 +455,13 @@ impl UI {
             p.info.hostname.clone(),
             p.info.platform.clone(),
             p.options.get("alias").unwrap_or(&"".to_owned()).to_owned(),
-            crate::ui_interface::get_peer_online(&id).unwrap_or(false),
+            // s[5]: online state consumed by ab.tis as a truthy value
+            // ("true" / "" -- an empty string is falsy, "false" would be truthy).
+            if crate::ui_interface::get_peer_online(&id).unwrap_or(false) {
+                "true".to_owned()
+            } else {
+                String::new()
+            },
         ];
         Value::from_iter(values)
     }
