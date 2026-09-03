@@ -1414,6 +1414,19 @@ function showSettings() {
     });
 }
 
+var peer_online_elapsed = 0;
+function queryPeerOnline() {
+    var sessions = handler.get_recent_sessions();
+    var ids = [];
+    for (var s in sessions) {
+        var id = s[0] || s.id || "";
+        if (id) ids.push(id);
+    }
+    if (ids.length > 0) {
+        handler.query_onlines(ids);
+    }
+}
+
 function checkConnectStatus() {
     handler.check_mouse_time(); // trigger connection status updater
     self.timer(1s, function() {
@@ -1455,10 +1468,20 @@ function checkConnectStatus() {
             stdout.println("recent sessions updated");
             updateAbPeer();
             app.update();
+            queryPeerOnline();
         }
         tmp = handler.get_option("disable-udp") == "Y";
         if (tmp != disable_udp) {
             disable_udp = tmp;
+            app.update();
+        }
+        // Periodically query peer online states and refresh the UI when they change.
+        peer_online_elapsed += 1;
+        if (peer_online_elapsed >= 15) {
+            peer_online_elapsed = 0;
+            queryPeerOnline();
+        }
+        if (handler.peer_online_updated()) {
             app.update();
         }
         check_if_overlay();

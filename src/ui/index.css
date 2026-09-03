@@ -122,11 +122,12 @@ span.search-icon {
 
 span.online-dot {
     display: inline-block;
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
-    margin-left: 0px;
-    margin-right: 10px;
+    margin-top: 2px;
+    margin-left: 2px;
+    margin-right: 6px;
     vertical-align: middle;
 }
 

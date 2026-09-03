@@ -454,7 +454,7 @@ class SessionList: Reactor.Component {
         var hostname = s[2] || s.hostname || "";
         var platform = s[3] || s.platform || "";
         var alias = s[4] || s.alias || "";
-var online = onlineStates[id] || false;
+        var online = s[5] || s.status || false;
         var onlineDot = <span .online-dot style={online ? "background-color: #4caf50;" : "background-color: #f5853b;"} title={online ? translate('Online') : translate('Offline')}></span>;
         if (this.style == "list") {
             return <div .remote-session-link .remote-session-list id={id} platform={platform} title={alias ? "ID: " + id : ""}>

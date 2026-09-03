@@ -1705,3 +1705,100 @@ pub fn is_remote_modify_enabled_by_control_permissions() -> Option<bool> {
         .lock()
         .unwrap()
 }
+// Peer online states for the legacy Sciter (non-flutter) UI.
+//
+// This mirrors `flutter::async_tasks` in `src/flutter.rs`: it reuses
+// `crate::client::peer_online::query_online_states` (Rendezvous "online request")
+// and stores the result in a shared map so the Sciter UI can poll for updates.
+#[cfg(not(any(target_os = "android", target_os = "ios", feature = "flutter")))]
+mod peer_online {
+    use hbb_common::tokio;
+    use std::{
+        collections::HashMap,
+        sync::{
+            atomic::{AtomicBool, Ordering},
+            mpsc::{sync_channel, SyncSender},
+            Mutex, RwLock,
+        },
+    };
+
+    lazy_static::lazy_static! {
+        static ref ONLINE_STATES: RwLock<HashMap<String, bool>> = Default::default();
+        static ref ONLINE_STATES_UPDATED: AtomicBool = AtomicBool::new(false);
+        static ref TX_QUERY_ONLINES: Mutex<Option<SyncSender<Vec<String>>>> = Default::default();
+    }
+
+    /// Kick off a background runner that serially processes online-state queries.
+    /// Only one task is allowed to run at a time (mirrors `flutter::async_tasks`).
+    fn ensure_runner() {
+        let mut guard = TX_QUERY_ONLINES.lock().unwrap();
+        if guard.is_none() {
+            let (tx, rx) = sync_channel::<Vec<String>>(1);
+            std::thread::spawn(move || start_runner_(rx));
+            *guard = Some(tx);
+        }
+    }
+
+    #[tokio::main(flavor = "current_thread")]
+    async fn start_runner_(rx: std::sync::mpsc::Receiver<Vec<String>>) {
+        loop {
+            match rx.recv() {
+                Ok(ids) => {
+                    crate::client::peer_online::query_online_states(ids, set_online_states).await
+                }
+                _ => {
+                    // unreachable!
+                    break;
+                }
+            }
+        }
+    }
+
+    fn set_online_states(onlines: Vec<String>, offlines: Vec<String>) {
+        {
+            let mut map = ONLINE_STATES.write().unwrap();
+            for id in &onlines {
+                map.insert(id.clone(), true);
+            }
+            for id in &offlines {
+                map.insert(id.clone(), false);
+            }
+        }
+        ONLINE_STATES_UPDATED.store(true, Ordering::SeqCst);
+    }
+
+    /// Query online states of the given peers. Results are exposed via
+    /// `peer_online_updated()` / `get_peer_online()`.
+    pub fn query_peer_online(ids: Vec<String>) {
+        ensure_runner();
+        if let Some(tx) = TX_QUERY_ONLINES.lock().unwrap().as_ref() {
+            // Ignore if the channel is full.
+            let _ = tx.try_send(ids);
+        }
+    }
+
+    /// Returns true once new online states arrived since the last check, and clears the flag.
+    pub fn peer_online_updated() -> bool {
+        ONLINE_STATES_UPDATED.swap(false, Ordering::SeqCst)
+    }
+
+    /// Get the latest known online state of a peer, if any.
+    pub fn get_peer_online(id: &str) -> Option<bool> {
+        ONLINE_STATES.read().unwrap().get(id).copied()
+    }
+}
+
+#[cfg(not(any(target_os = "android", target_os = "ios", feature = "flutter")))]
+pub use self::peer_online::{get_peer_online, peer_online_updated, query_peer_online};
+
+// No-op stubs so the Sciter bridge (`src/ui.rs`) keeps compiling on other targets.
+#[cfg(any(target_os = "android", target_os = "ios", feature = "flutter"))]
+pub fn query_peer_online(_ids: Vec<String>) {}
+#[cfg(any(target_os = "android", target_os = "ios", feature = "flutter"))]
+pub fn peer_online_updated() -> bool {
+    false
+}
+#[cfg(any(target_os = "android", target_os = "ios", feature = "flutter"))]
+pub fn get_peer_online(_id: &str) -> Option<bool> {
+    None
+}
