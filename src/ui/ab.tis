@@ -183,35 +183,6 @@ class AddressBook: Reactor.Component
         } else {
             peers = ab.peers;
         }
-        
-        // Sort peers
-        var sortType = getPeerSortType();
-        peers.sort(function(p1, p2) {
-            var id1 = p1.id || "";
-            var id2 = p2.id || "";
-            var name1 = (p1.alias || p1.id || "").toLowerCase();
-            var name2 = (p2.alias || p2.id || "").toLowerCase();
-            var host1 = (p1.hostname || "").toLowerCase();
-            var host2 = (p2.hostname || "").toLowerCase();
-            var user1 = (p1.username || "").toLowerCase();
-            var user2 = (p2.username || "").toLowerCase();
-            
-            var a, b;
-            switch (sortType) {
-                case "Remote Host":
-                    a = host1; b = host2; break;
-                case "Username":
-                    a = user1; b = user2; break;
-                case "Status":
-                    a = name1; b = name2; break;
-                default:
-                    a = name1; b = name2; break;
-            }
-            if (a < b) return -1;
-            if (a > b) return 1;
-            return 0;
-        });
-        
         return peers;
     }
 }
@@ -387,33 +358,35 @@ class SessionList: Reactor.Component {
             sessions = tmp;
         }
         
-        // Sort sessions
-        var sortType = getPeerSortType();
-        sessions.sort(function(s1, s2) {
-            var id1 = (s1[0] || s1.id || "").toLowerCase();
-            var id2 = (s2[0] || s2.id || "").toLowerCase();
-            var name1 = (s1[4] || s1.alias || "").toLowerCase();
-            var name2 = (s2[4] || s2.alias || "").toLowerCase();
-            var host1 = (s1[2] || s1.hostname || "").toLowerCase();
-            var host2 = (s2[2] || s2.hostname || "").toLowerCase();
-            var user1 = (s1[1] || s1.username || "").toLowerCase();
-            var user2 = (s2[1] || s2.username || "").toLowerCase();
-            
-            var a, b;
-            switch (sortType) {
-                case "Remote Host":
-                    a = host1; b = host2; break;
-                case "Username":
-                    a = user1; b = user2; break;
-                case "Status":
-                    a = name1; b = name2; break;
-                default:
-                    a = name1; b = name2; break;
-            }
-            if (a < b) return -1;
-            if (a > b) return 1;
-            return 0;
-        });
+        // Sort sessions in ab
+        if (this.type == "ab" ) {
+            var sortType = getPeerSortType();
+            sessions.sort(function(s1, s2) {
+                var id1 = (s1[0] || s1.id || "").toLowerCase();
+                var id2 = (s2[0] || s2.id || "").toLowerCase();
+                var name1 = (s1[4] || s1.alias || "").toLowerCase();
+                var name2 = (s2[4] || s2.alias || "").toLowerCase();
+                var host1 = (s1[2] || s1.hostname || "").toLowerCase();
+                var host2 = (s2[2] || s2.hostname || "").toLowerCase();
+                var user1 = (s1[1] || s1.username || "").toLowerCase();
+                var user2 = (s2[1] || s2.username || "").toLowerCase();
+                
+                var a, b;
+                switch (sortType) {
+                    case "Remote Host":
+                        a = host1; b = host2; break;
+                    case "Username":
+                        a = user1; b = user2; break;
+                    case "Status":
+                        a = s1[5]; b = s2[5]; break;
+                    default:
+                        a = name1; b = name2; break;
+                }
+                if (a < b) return -1;
+                if (a > b) return 1;
+                return 0;
+            });
+        }
         
         return sessions;
     }
@@ -653,8 +626,8 @@ class MultipleSessions: Reactor.Component {
                     </div>
                     {!this.hidden && !(disable_account && type == "ab") && <SearchBar type={type} />}
                     {!this.hidden && !(disable_account && type == "ab") && <SessionStyle type={type} />}
-                    {!this.hidden && type != "recent" && <PeerSortDropdown />}
-                    {!this.hidden && !(disable_account && type == "ab") && <div .sessions-tab><span>{svg_tags}</span></div>}
+                    {!this.hidden && (!disable_account && type == "ab") && <PeerSortDropdown />}
+                    {!this.hidden && (!disable_account && type == "ab") && <div .sessions-tab><span>{svg_tags}</span></div>}
                 </div>
                 {!this.hidden && 
                 ((type == "fav" && <Favorites />) ||
