@@ -200,6 +200,25 @@ impl UI {
         recent_sessions_updated()
     }
 
+    fn query_onlines(&self, ids: Value) {
+        let ids: Vec<String> = ids
+            .values()
+            .filter_map(|v| v.as_string())
+            .map(|s| s.to_owned())
+            .collect();
+        if !ids.is_empty() {
+            crate::ui_interface::query_peer_online(ids);
+        }
+    }
+
+    fn peer_online_updated(&self) -> bool {
+        crate::ui_interface::peer_online_updated()
+    }
+
+    fn get_peer_online_statuses(&self) -> String {
+        crate::ui_interface::peer_online_statuses()
+    }
+
     fn get_id(&self) -> String {
         ipc::get_id()
     }
@@ -435,11 +454,18 @@ impl UI {
     #[inline]
     fn get_peer_value(id: String, p: PeerConfig) -> Value {
         let values = vec![
-            id,
+            id.clone(),
             p.info.username.clone(),
             p.info.hostname.clone(),
             p.info.platform.clone(),
             p.options.get("alias").unwrap_or(&"".to_owned()).to_owned(),
+            // s[5]: online state consumed by ab.tis as a truthy value
+            // ("true" / "" -- an empty string is falsy, "false" would be truthy).
+            if crate::ui_interface::get_peer_online(&id).unwrap_or(false) {
+                "true".to_owned()
+            } else {
+                String::new()
+            },
         ];
         Value::from_iter(values)
     }
@@ -754,6 +780,9 @@ impl sciter::EventHandler for UI {
         fn get_fav();
         fn store_fav(Value);
         fn recent_sessions_updated();
+        fn query_onlines(Value);
+        fn peer_online_updated();
+        fn get_peer_online_statuses();
         fn get_icon();
         fn install_me(String, String);
         fn is_installed();

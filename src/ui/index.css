@@ -120,6 +120,17 @@ span.search-icon {
     left: 0px;
 }
 
+span.online-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    margin-top: 2px;
+    margin-left: 2px;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
 span.clear-input {
     display: none;
     right: 0px;
