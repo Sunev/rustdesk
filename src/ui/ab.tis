@@ -370,21 +370,33 @@ class SessionList: Reactor.Component {
                 var host2 = (s2[2] || s2.hostname || "").toLowerCase();
                 var user1 = (s1[1] || s1.username || "").toLowerCase();
                 var user2 = (s2[1] || s2.username || "").toLowerCase();
+                var status1 = (s1[5] || s1.status || false);
+                var status2 = (s2[5] || s2.status || false);
                 
                 var a, b;
-                switch (sortType) {
-                    case "Remote Host":
-                        a = host1; b = host2; break;
-                    case "Username":
-                        a = user1; b = user2; break;
-                    case "Status":
-                        a = s1[5]; b = s2[5]; break;
-                    default:
-                        a = name1; b = name2; break;
+                if (sortType != "Status") {
+                    switch (sortType) {
+                        case "Remote Host":
+                            a = host1; b = host2; break;
+                        case "Username":
+                            a = user1; b = user2; break;
+                        default:
+                            a = name1; b = name2; break;
+                    }
+                    if (a < b) return -1;
+                    if (a > b) return 1;
+                    return 0;
+                } else {
+                    // online first; name using as 2nd sort;
+                    var online1 = status1 ? true : false;
+                    var online2 = status2 ? true : false;
+                    if (online1 != online2) {
+                        return online1 ? -1 : 1;
+                    }
+                    if (name1 < name2) return -1;
+                    if (name1 > name2) return 1;
+                    return 0;
                 }
-                if (a < b) return -1;
-                if (a > b) return 1;
-                return 0;
             });
         }
         
