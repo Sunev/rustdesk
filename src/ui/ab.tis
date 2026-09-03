@@ -362,10 +362,8 @@ class SessionList: Reactor.Component {
         if (this.type == "ab" ) {
             var sortType = getPeerSortType();
             sessions.sort(function(s1, s2) {
-                var id1 = (s1[0] || s1.id || "").toLowerCase();
-                var id2 = (s2[0] || s2.id || "").toLowerCase();
-                var name1 = (s1[4] || s1.alias || "").toLowerCase();
-                var name2 = (s2[4] || s2.alias || "").toLowerCase();
+                var name1 = (s1[4] || s1.alias || s1[0] || s1.id || "").toLowerCase();
+                var name2 = (s2[4] || s2.alias || s2[0] || s2.id || "").toLowerCase();
                 var host1 = (s1[2] || s1.hostname || "").toLowerCase();
                 var host2 = (s2[2] || s2.hostname || "").toLowerCase();
                 var user1 = (s1[1] || s1.username || "").toLowerCase();
