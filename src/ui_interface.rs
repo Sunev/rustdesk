@@ -1786,10 +1786,17 @@ mod peer_online {
     pub fn get_peer_online(id: &str) -> Option<bool> {
         ONLINE_STATES.read().unwrap().get(id).copied()
     }
+
+    /// Get all recorded online states as a JSON object (`{"<id>": true, ...}`),
+    /// so the Sciter UI can bulk-update the address book's peer `status` fields.
+    pub fn peer_online_statuses() -> String {
+        let map = ONLINE_STATES.read().unwrap();
+        serde_json::to_string(&*map).unwrap_or_default()
+    }
 }
 
 #[cfg(not(any(target_os = "android", target_os = "ios", feature = "flutter")))]
-pub use self::peer_online::{get_peer_online, peer_online_updated, query_peer_online};
+pub use self::peer_online::{get_peer_online, peer_online_statuses, peer_online_updated, query_peer_online};
 
 // No-op stubs so the Sciter bridge (`src/ui.rs`) keeps compiling on other targets.
 #[cfg(any(target_os = "android", target_os = "ios", feature = "flutter"))]
@@ -1801,4 +1808,8 @@ pub fn peer_online_updated() -> bool {
 #[cfg(any(target_os = "android", target_os = "ios", feature = "flutter"))]
 pub fn get_peer_online(_id: &str) -> Option<bool> {
     None
+}
+#[cfg(any(target_os = "android", target_os = "ios", feature = "flutter"))]
+pub fn peer_online_statuses() -> String {
+    String::new()
 }

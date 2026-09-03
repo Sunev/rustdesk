@@ -1415,12 +1415,18 @@ function showSettings() {
 }
 
 var peer_online_elapsed = 0;
+var peer_online_queried = false;
 function queryPeerOnline() {
-    var sessions = handler.get_recent_sessions();
     var ids = [];
+    var sessions = handler.get_recent_sessions();
     for (var s in sessions) {
         var id = s[0] || s.id || "";
-        if (id) ids.push(id);
+        if (id && ids.indexOf(id) < 0) ids.push(id);
+    }
+    // also query address-book peers so their online state shows up there
+    for (var p in ab.peers) {
+        var id = p.id || "";
+        if (id && ids.indexOf(id) < 0) ids.push(id);
     }
     if (ids.length > 0) {
         handler.query_onlines(ids);
@@ -1475,14 +1481,30 @@ function checkConnectStatus() {
             disable_udp = tmp;
             app.update();
         }
-        // Periodically query peer online states and refresh the UI when they change.
+        // Query peer online states: right away on the first pass (so the UI
+        // updates promptly), then every 15 seconds. Refresh the UI on changes.
         peer_online_elapsed += 1;
-        if (peer_online_elapsed >= 15) {
+        if (!peer_online_queried || peer_online_elapsed >= 15) {
+            peer_online_queried = true;
             peer_online_elapsed = 0;
             queryPeerOnline();
         }
         if (handler.peer_online_updated()) {
+            // Back-fill the address book's peer `status` fields from the query result.
+            var statuses = JSON.parse(handler.get_peer_online_statuses() || "{}");
+            var abChanged = false;
+            for (var p in ab.peers) {
+                var id = p.id || "";
+                if (id in statuses) {
+                    var st = statuses[id];
+                    if ((p.status ? 1 : 0) != (st ? 1 : 0)) {
+                        p.status = st;
+                        abChanged = true;
+                    }
+                }
+            }
             app.update();
+            if (abChanged && abComponent) abComponent.update();
         }
         check_if_overlay();
         checkConnectStatus();    

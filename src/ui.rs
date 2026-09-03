@@ -215,6 +215,10 @@ impl UI {
         crate::ui_interface::peer_online_updated()
     }
 
+    fn get_peer_online_statuses(&self) -> String {
+        crate::ui_interface::peer_online_statuses()
+    }
+
     fn get_id(&self) -> String {
         ipc::get_id()
     }
@@ -778,6 +782,7 @@ impl sciter::EventHandler for UI {
         fn recent_sessions_updated();
         fn query_onlines(Value);
         fn peer_online_updated();
+        fn get_peer_online_statuses();
         fn get_icon();
         fn install_me(String, String);
         fn is_installed();
