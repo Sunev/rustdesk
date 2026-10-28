@@ -561,7 +561,9 @@ class MyIdMenu: Reactor.Component {
         this.toggleMenuState();
         if (direct_server) direct_server.update();
         var menu = this.$(menu#config-options);
-        this.$(svg#menu).popup(menu);
+        var anchor = this.$(svg#menu);
+        fitSettingMenu(anchor);
+        anchor.popup(menu);
     }
 
     event click $(li#login) () {
@@ -1400,11 +1402,33 @@ function showAbout() {
     myIdMenu.showAbout();
 }
 
+// The settings menu is taller than the window on small screens. Cap its height
+// inside the window and let the popup scroll instead of exceeding the screen.
+function fitSettingMenu(anchor) {
+    var menu = $(menu#config-options);
+    if (!menu) return;
+    var windowHeight = view.box(#height, #client);
+    var maxHeight = windowHeight - 120;
+    try {
+        var r = anchor.getBoundingClientRect();
+        if (r && r.bottom != undefined) {
+            var below = windowHeight - r.bottom;
+            var above = r.top;
+            var available = below > above ? below : above;
+            if (available > 0) maxHeight = available - 16;
+        }
+    } catch (e) {}
+    if (maxHeight < 180) maxHeight = 180;
+    menu.style["max-height"] = maxHeight + "px";
+    menu.style["overflow-y"] = "scroll-indicator";
+}
+
 function showSettings() {
     if ($(#overlay).style#display == 'block') return;
     var menu = myIdMenu.$(menu#config-options);
     var anchor = $(#open-settings);
     if (!anchor) anchor = myIdMenu.$(svg#menu);
+    fitSettingMenu(anchor);
     // show immediately at button, then update menu state asynchronously
     anchor.popup(menu);
     self.timer(1ms, function() {

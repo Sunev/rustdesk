@@ -340,6 +340,12 @@ svg#menu:hover {
     background: color(gray-bg);
 }
 
+/* Long settings menu: scroll inside the popup instead of growing past the screen.
+   The actual max-height is computed at runtime in fitSettingMenu(). */
+menu#config-options {
+    overflow-y: scroll-indicator;
+}
+
 svg#edit:hover {
     color: color(text);
 }
