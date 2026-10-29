@@ -603,8 +603,10 @@ class MyIdMenu: Reactor.Component {
     function showAbout() {
         var name = handler.get_app_name();
         msgbox("custom-nocancel-nook-hasclose", translate("About") + " " + name, "<div style='line-height: 2em'> \
-            <div>Version: " + handler.get_version() + " \
-            <div>Fingerprint: " + handler.get_fingerprint() + " \
+            <div>" + translate("Version") + ": " + handler.get_version() + " \
+            <div>" + translate("Build Date") + ": " + handler.get_build_date() + " \
+            <div>" + translate("Fingerprint") + ": " + handler.get_fingerprint() + " \
+            <div>" + translate("ID") + ": " + get_id() + " \
             <div .link .custom-event url='https://rustdesk.com/privacy.html'>" + translate("Privacy Statement") + "</div> \
             <div .link .custom-event url='https://rustdesk.com'>" + translate("Website") + "</div> \
 	    <div style='background: #2c8cff; color: white; padding: 1em; margin-top: 1em;'>Copyright &copy; 2026 Purslane Tech Pte. Ltd.\
@@ -615,7 +617,7 @@ class MyIdMenu: Reactor.Component {
             if (el && el.attributes) {
                 handler.open_url(el.attributes['url']);
             };
-        }, 400, get_msgbox_width());
+        }, 470, get_msgbox_width());
     }
 
     event click $(menu#config-options>li) (_, me) {
