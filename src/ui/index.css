@@ -84,11 +84,29 @@ div.sessions-tab svg {
     size: 14px;
 }
 
+div#sessions-type span svg {
+    size: 20px;
+}
+
+div#sessions-type span {
+    padding: 3px 5px;
+}
+
+div.sessions-tab span:hover {
+    border-radius: 3px;
+    background: color(hover-bg);
+}
+
 div.sessions-tab span.active {
     cursor: default;
     border-radius: 3px;
     background: color(bg);
     color: color(text);
+}
+
+div#sort-dropdown:owns-popup > span {
+    border-radius: 3px;
+    background: color(bg);
 }
 
 div.search-id {
