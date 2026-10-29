@@ -816,6 +816,7 @@ pub fn get_lan_peers() -> Vec<HashMap<&'static str, String>> {
                 ("username", peer.username.clone()),
                 ("hostname", peer.hostname.clone()),
                 ("platform", peer.platform.clone()),
+                ("status", if peer.online { "true".to_owned() } else { String::new() }),
             ])
         })
         .collect()
