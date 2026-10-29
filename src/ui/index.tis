@@ -503,6 +503,8 @@ class MyIdMenu: Reactor.Component {
     }
 
     function render() {
+        var me = this;
+        self.timer(1ms, function() { me.toggleMenuState() });
         return <div #myid>
             {this.renderPop()}
             ID{svg_menu}
@@ -1457,6 +1459,22 @@ function queryPeerOnline() {
     }
 }
 
+var peer_online_cache = {};
+// Re-rendering the whole app just because a poll answered resets the open
+// settings popup's item states, so only refresh the UI when a state changed.
+function peerOnlineStatusesChanged(statuses) {
+    var changed = false;
+    var id;
+    for (id in statuses) {
+        if (peer_online_cache[id] !== statuses[id]) changed = true;
+    }
+    for (id in peer_online_cache) {
+        if (!(id in statuses)) changed = true;
+    }
+    if (changed) peer_online_cache = statuses;
+    return changed;
+}
+
 function checkConnectStatus() {
     handler.check_mouse_time(); // trigger connection status updater
     self.timer(1s, function() {
@@ -1516,6 +1534,7 @@ function checkConnectStatus() {
         if (handler.peer_online_updated()) {
             // Back-fill the address book's peer `status` fields from the query result.
             var statuses = JSON.parse(handler.get_peer_online_statuses() || "{}");
+            var changed = peerOnlineStatusesChanged(statuses);
             var abChanged = false;
             for (var p in ab.peers) {
                 var id = p.id || "";
@@ -1527,7 +1546,9 @@ function checkConnectStatus() {
                     }
                 }
             }
-            app.update();
+            // Online dots are rendered only by the session lists / address book,
+            // so re-render just that subtree instead of the whole app.
+            if ((changed || abChanged) && app.multipleSessions) app.multipleSessions.update();
             if (abChanged && abComponent) abComponent.update();
         }
         check_if_overlay();
