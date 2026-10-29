@@ -73,33 +73,52 @@ div.sessions-bar {
     flow: horizontal;
 }
 
+div.sessions-tab {
+    flow: horizontal;
+}
+
 div.sessions-tab span {
-    display: inline-block;
-    padding: 6px 8px;
+    display: block;
+    width: 30px;
+    height: 26px;
+    padding: 0;
+    flow: horizontal;
+    vertical-align: middle;
+    horizontal-align: center;
+    border-radius: 3px;
     cursor: pointer;
     @ELLIPSIS;
 }
 
 div.sessions-tab svg {
+    display: block;
     size: 14px;
+}
+
+svg#refresh-ab {
+    size: 20px;
+}
+
+@keyframes refresh-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+div.sessions-tab span.spinning svg#refresh-ab {
+    transform-origin: 50% 50%;
+    animation: refresh-spin 0.2s linear infinite;
 }
 
 div#sessions-type span svg {
     size: 20px;
 }
 
-div#sessions-type span {
-    padding: 3px 5px;
-}
-
 div.sessions-tab span:hover {
-    border-radius: 3px;
     background: color(hover-bg);
 }
 
 div.sessions-tab span.active {
     cursor: default;
-    border-radius: 3px;
     background: color(bg);
     color: color(text);
 }
@@ -112,6 +131,7 @@ div#sort-dropdown:owns-popup > span {
 div.search-id {
     width: 120px;
     padding: 0;
+    margin-right: 0.5em;
     position: relative;
     display: inline-block;
 }

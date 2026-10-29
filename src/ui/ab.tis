@@ -1,6 +1,7 @@
 var selectTags = [];
 var ab = { tags: [], peers: [] };
 var abLoading;
+var abLoaded = false;
 var abError;
 var current_menu_peer_id = '';
 var current_menu_tag = '';
@@ -20,9 +21,10 @@ class AddressBook: Reactor.Component
         if (!handler.get_local_option("access_token")) {
             return <div style="margin: *"><div #login-link .link style="margin: *; width: 100px; text-align: center; font-size: 1.2em;">{translate("Login")}</div></div>;
         }
-        if (abLoading) {
+        if (abLoading && !abLoaded) {
             return <div style="margin: *"><progress style="color: #0071ff" /></div>;
-        } else if (abError) {
+        }
+        if (abError) {
             return <div style="margin: *; text-align: center;">{abError}
                 <div #retry .link style="margin-left: 1em;">{translate("Retry")}</div>
             </div>;
@@ -217,6 +219,7 @@ var svg_tile = <svg #session-tile viewBox="0 0 158.6 158.6"><path style="stroke-
 var svg_list = <svg #session-list viewBox="0 0 246.8 185.8"><path style="stroke-width:.482473" d="M-69.2 102.7A16.5 16.5 0 0 1-67 70.4c7.3-1 15 4 17.3 11 1 3 1 8 0 10.8a16.7 16.7 0 0 1-19.5 10.5zm53-3.4a12.3 12.3 0 0 1-7-16.8c1.3-3 3.1-4.7 6-6 2.2-1 2.8-1 87.2-1 92.4 0 87-.2 90.6 2.6.9.7 2.2 2.4 3 3.7 1.2 2.2 1.4 3.1 1.4 6 0 4.8-2.3 8.6-6.8 11l-1.9 1-85.2.1c-71.9 0-85.5 0-87.3-.6zm-53.5-73c-4.7-1.5-8.6-5-10.6-9.1-1.8-4-1.8-9.8 0-13.7 1.6-3.3 4.4-6.2 7.8-8 2.2-1.2 3-1.3 7.1-1.3 4 0 5 .1 7.3 1.3a16.6 16.6 0 0 1 0 29.6c-2 1-3.4 1.4-6.5 1.5-2.2 0-4.5 0-5.1-.3zm52.3-4.8c-2.4-1.1-5.3-4-6.2-6.5-1-2.4-1-7.3.1-9.7.5-1.1 1.8-2.8 2.8-3.8 3.7-3.5-4-3.2 91-3.2h85.5l2.5 1.1a12 12 0 0 1 0 21.8l-2.5 1.2H70.2c-82.5 0-85.7 0-87.6-1zm-52.1-71.6a18 18 0 0 1-10-7.7 17 17 0 0 1-.7-15c2.3-5 5.8-7.9 11.4-9.3 9-2.3 18.3 4 19.8 13.4a16.4 16.4 0 0 1-15.2 19c-2.1.1-4.1 0-5.3-.4zm52.1-5.9c-1.3-.6-3-1.7-3.7-2.5-4.7-5-4.2-13.7 1-18 3.7-3.1-1.8-3 91.5-2.8l84.9.1 2 1a12 12 0 0 1 6.7 11c0 3-.2 3.9-1.4 6-.8 1.4-2.1 3-3 3.8-3.7 2.7 1.8 2.6-90.6 2.6h-85l-2.4-1.2z" transform="translate(81.7 82.6)"/></svg>;
 var svg_tags = <svg #toggle-tags viewBox="129 -765 702 702"><path d="m352-302-34 133q-4 15-16.5 25T274-134q-23 0-37-17.5t-8-40.5l28-110H154q-23 0-37-17.5t-8-40.5q4-15 16-25.5t29-10.5h127l42-168H220q-23 0-37-17.5t-8-40.5q4-15 16-25.5t29-10.5h127l32-133q4-15 16.5-25t27.5-10q23 0 36.5 17.5T468-769l-27 111h168l32-133q4-15 16.5-25t27.5-10q23 0 36.5 17.5T730-769l-27 111h103q23 0 37 17.5t8 40.5q-4 15-16 25.5T806-564H680l-43 168h103q23 0 37 17.5t8 40.5q-4 15-16 25.5T740-302H614l-34 133q-4 15-16.5 25T536-134q-23 0-37-17.5t-8-40.5l28-110H352Zm23-94h168l42-168H418l-43 168Z"/></svg>;
 var svg_sort = <svg #sort-icon viewBox="129 -805 702 702"><path d="M141-189q-20.1 0-33.05-13.68Q95-216.35 95-236.42t12.95-33.33Q120.9-283 141-283h185q20.1 0 33.55 13.68Q373-255.65 373-235.08t-13.45 33.33Q346.1-189 326-189H141Zm0-244q-20.1 0-33.05-13.68Q95-460.35 95-480.42t12.95-33.33Q120.9-527 141-527h431q20.1 0 33.55 14.18Q619-498.65 619-478.58t-13.45 32.83Q592.1-433 572-433H141Zm0-244q-20.1 0-33.05-13.68Q95-704.35 95-724.42t13.63-32.83Q122.25-770 142-770h677q20.1 0 33.55 13.68Q866-742.65 866-722.58t-14.12 32.83Q837.75-677 818-677H141Z"/></svg>;
+var svg_refresh = <svg #refresh-ab viewBox="0 0 24 24"><g><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-8 8s3.57 8 8 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></g></svg>;
 var svg_recent = <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm3.3 14.71L11 12.41V7h2v4.59l3.71 3.71-1.42 1.41z"/></svg>;
 var svg_favorite = <svg viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>;
 var svg_discovered = <svg viewBox="0 0 24 24"><path d="M12 10.9c-.61 0-1.1.49-1.1 1.1s.49 1.1 1.1 1.1c.61 0 1.1-.49 1.1-1.1s-.49-1.1-1.1-1.1zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2.19 12.19L6 18l3.81-8.19L18 6l-3.81 8.19z"/></svg>;
@@ -288,7 +291,7 @@ class SessionStyle: Reactor.Component {
 
     function render() {
         var sessionsStyle = getSessionsStyle(this.type);
-        return <div .sessions-tab style="margin-left: 0.5em;">
+        return <div .sessions-tab>
                 <span class={sessionsStyle == "tile" ? "active" : "inactive"}>{svg_tile}</span>
                 <span class={sessionsStyle != "tile" ? "active" : "inactive"}>{svg_list}</span>
             </div>;
@@ -309,7 +312,7 @@ class SessionStyle: Reactor.Component {
 class PeerSortDropdown: Reactor.Component {
     function render() {
         var sortType = getPeerSortType();
-        return <div .sessions-tab style="margin-left: 0.5em;" #sort-dropdown>
+        return <div .sessions-tab #sort-dropdown>
             <span>{svg_sort}</span>
             <popup>
                 <menu.context #sort-menu>
@@ -639,6 +642,7 @@ class MultipleSessions: Reactor.Component {
                         {!disable_account && !disable_ab && <span #ab class={type == "ab" ? 'active' : 'inactive'} title={translate('Address book')}>{svg_address_book}</span>}
                     </div>
                     {!this.hidden && !(disable_account && type == "ab") && <SearchBar type={type} />}
+                    {!this.hidden && (!disable_account && type == "ab") && <div .sessions-tab><span class={_refreshSpinActive ? "spinning" : ""} title={translate('Refresh')}>{svg_refresh}</span></div>}
                     {!this.hidden && !(disable_account && type == "ab") && <SessionStyle type={type} />}
                     {!this.hidden && (!disable_account && type == "ab") && <PeerSortDropdown />}
                     {!this.hidden && (!disable_account && type == "ab") && <div .sessions-tab><span class={!hideAbTagsPanel ? "active" : "inactive"} title={translate('Toggle Tags')}>{svg_tags}</span></div>}
@@ -675,6 +679,10 @@ class MultipleSessions: Reactor.Component {
         hideAbTagsPanel = !hideAbTagsPanel;
         handler.set_local_option("hide-ab-tags-panel", hideAbTagsPanel ? "Y" : "");
         this.update();
+    }
+
+    event click $(svg#refresh-ab) (_, __) {
+        refreshAb();
     }
 
     function onSize() {
@@ -747,9 +755,40 @@ function handleAbError(err) {
     app.update();
 }
 
+// Force-reload the address book, like Flutter's abModel.pullAb(listAndCurrent).
+function refreshAb() {
+    if (abLoading) return;
+    if (!handler.get_local_option("access_token")) return;
+    _refreshSpinUntil = getTime() + 1000;
+    startRefreshSpin();
+    getAb();
+}
+
+var _refreshSpinActive = false;
+var _refreshSpinUntil = 0;
+function _refreshSpinSpan() {
+    var el = $(svg#refresh-ab);
+    return el ? el.parent : null;
+}
+function startRefreshSpin() {
+    if (_refreshSpinActive) return;
+    _refreshSpinActive = true;
+    var guard = function() {
+        if (!abLoading && getTime() >= _refreshSpinUntil) {
+            _refreshSpinActive = false;
+            var span = _refreshSpinSpan();
+            if (span) span.attributes.toggleClass("spinning", false);
+            return;
+        }
+        self.timer(100ms, guard);
+    };
+    self.timer(100ms, guard);
+}
+
 function getAb() {
     abLoading = true;
     abError = "";
+    startRefreshSpin();
     app.update();
     httpRequest(handler.get_api_server() + "/api/ab/get", #post, {}, function(data) {
         if (data) {
@@ -757,13 +796,23 @@ function getAb() {
                 handleAbError(data.error);
                 return;
             }
+            var oldOnline = {};
+            for (var oldPeer in (ab.peers || [])) {
+                if (oldPeer.status) oldOnline[oldPeer.id || ""] = true;
+            }
             var tm = data.updated_at;
             ab = JSON.parse(data.data);
             if (!ab.tags) ab.tags = [];
             if (!ab.peers) ab.peers = [];
+            // Keep the current online dots until the next online-status poll.
+            for (var newPeer in ab.peers) {
+                if (oldOnline[newPeer.id || ""]) newPeer.status = true;
+            }
         }
+        abLoaded = true;
         abLoading = false;
         app.update();
+        queryPeerOnline();
     }, function(err, status) {
         handleAbError(err);
     }, getHttpHeaders());
@@ -777,6 +826,7 @@ function updateAb() {
 
 function resetAb() {
     ab = { tags: [], peers: [] };
+    abLoaded = false;
     app.update();
 }
 
