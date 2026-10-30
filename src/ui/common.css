@@ -2,6 +2,7 @@ html {
     var(accent): #0071ff;
     var(button): #2C8CFF;
     var(gray-bg): #eee;
+    var(hover-bg): #ddd;
     var(bg): white;
     var(border): #ccc;
     var(hover-border): #999;
@@ -25,6 +26,7 @@ html {
 html.darktheme {
     var(bg): #252525;
     var(gray-bg): #141414;
+    var(hover-bg): #2e2e2e;
     var(menu-hover): #2D3033;
     var(border): #555;
 
