@@ -700,6 +700,7 @@ class _RemotePageState extends State<RemotePage>
           id: widget.id,
           ffi: _ffi,
           state: widget.toolbarState,
+          tabController: widget.tabController,
           onEnterOrLeaveImageSetter: (id, func) {
             _instanceIdOnEnterOrLeaveImage4Toolbar = id;
             _onEnterOrLeaveImage4Toolbar = func;

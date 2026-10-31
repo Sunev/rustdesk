@@ -22,6 +22,7 @@ import '../../models/platform_model.dart';
 import '../../common/shared_state.dart';
 import './popup_menu.dart';
 import './kb_layout_type_chooser.dart';
+import './tabbar_widget.dart';
 import 'package:flutter_hbb/utils/scale.dart';
 import 'package:flutter_hbb/common/widgets/custom_scale_base.dart';
 
@@ -443,6 +444,7 @@ class RemoteToolbar extends StatefulWidget {
   final Function(int, Function(bool)) onEnterOrLeaveImageSetter;
   final Function(int) onEnterOrLeaveImageCleaner;
   final Function(VoidCallback) setRemoteState;
+  final DesktopTabController? tabController;
 
   RemoteToolbar({
     Key? key,
@@ -452,6 +454,7 @@ class RemoteToolbar extends StatefulWidget {
     required this.onEnterOrLeaveImageSetter,
     required this.onEnterOrLeaveImageCleaner,
     required this.setRemoteState,
+    this.tabController,
   }) : super(key: key);
 
   @override
@@ -803,6 +806,11 @@ class _RemoteToolbarState extends State<RemoteToolbar> {
       BuildContext context, _ToolbarEdge edge, bool isHorizontal) {
     final List<Widget> toolbarItems = [];
     toolbarItems.add(_PinMenu(state: widget.state));
+    toolbarItems.add(_ClientSwitchMenu(
+      id: widget.id,
+      ffi: widget.ffi,
+      tabController: widget.tabController,
+    ));
     toolbarItems.add(Obx(() {
       final privacyModeState = PrivacyModeState.find(widget.id);
       if ((privacyModeState.isEmpty ||
@@ -949,6 +957,65 @@ class _PinMenu extends StatelessWidget {
             : _ToolbarTheme.hoverInactiveColor,
       ),
     );
+  }
+}
+
+class _ClientSwitchMenu extends StatelessWidget {
+  final String id;
+  final FFI ffi;
+  final DesktopTabController? tabController;
+
+  const _ClientSwitchMenu({
+    required this.id,
+    required this.ffi,
+    this.tabController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = tabController;
+    if (controller == null) {
+      return const Offstage();
+    }
+    return Obx(() {
+      final tabs = controller.state.value.tabs;
+      final enabled = tabs.length > 1;
+      final icon = Icon(
+        Icons.devices,
+        color: enabled ? Colors.white : Colors.grey,
+        size: _ToolbarTheme.buttonSize,
+      );
+      if (!enabled) {
+        return _IconMenuButton(
+          icon: icon,
+          tooltip: 'Switch client',
+          color: _ToolbarTheme.inactiveColor,
+          hoverColor: _ToolbarTheme.hoverInactiveColor,
+          onPressed: null,
+        );
+      }
+      return _IconSubmenuButton(
+        icon: icon,
+        tooltip: 'Switch client',
+        color: _ToolbarTheme.blueColor,
+        hoverColor: _ToolbarTheme.hoverBlueColor,
+        ffi: ffi,
+        menuChildrenGetter: (_) => tabs
+            .asMap()
+            .entries
+            .map((e) => MenuButton(
+                  child: Text(
+                      '${e.key + 1}. ${DesktopTab.tablabelGetter(e.value.key).value}'),
+                  trailingIcon:
+                      e.value.key == id ? const Icon(Icons.check) : null,
+                  ffi: ffi,
+                  onPressed: e.value.key == id
+                      ? null
+                      : () => controller.jumpToByKey(e.value.key),
+                ))
+            .toList(),
+      );
+    });
   }
 }
 
