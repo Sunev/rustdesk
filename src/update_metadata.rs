@@ -27,12 +27,16 @@ const METADATA_SCHEMA_VERSION: u32 = 1;
 const SIGNATURE_SCHEMA_VERSION: u32 = 1;
 const SIGNATURE_ALGORITHM: &str = "ed25519";
 
+// This fork signs its own update metadata; upstream's key must not be trusted here.
+// Regenerate with `python res/update/generate_update_keypair.py`, and check the wiring
+// with `python res/update/generate_update_metadata.py check-key`.
 const TRUSTED_UPDATE_KEYS: &[TrustedUpdateKey] = &[TrustedUpdateKey {
     key_id: "2026-ed25519-main",
     algorithm: SIGNATURE_ALGORITHM,
     public_key: [
-        52, 214, 32, 65, 191, 134, 137, 75, 157, 74, 67, 221, 150, 161, 118, 215, 218, 35, 236,
-        156, 127, 120, 133, 156, 197, 141, 37, 22, 47, 106, 181, 177,
+        75, 164, 93, 240, 2, 215, 183, 249, 59, 42, 28, 54,
+        93, 186, 228, 105, 136, 54, 96, 32, 130, 191, 13, 127,
+        21, 175, 52, 244, 167, 180, 94, 132,
     ],
 }];
 
